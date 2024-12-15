@@ -1,0 +1,13 @@
+{
+    "manifest_version": 2,
+    "name": "AWS Newer",
+    "version": "1.0",
+    "description": "AWS Infrastructure Management Tool",
+    "permissions": [
+      "storage"
+    ],
+    "content_security_policy": "script-src 'self' https://cdnjs.cloudflare.com; object-src 'self'",
+    "browser_action": {
+      "default_popup": "popup.html"
+    }
+  }
