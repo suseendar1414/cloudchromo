@@ -1,63 +1,26 @@
-// initScripts.js
-document.addEventListener('DOMContentLoaded', () => {
-    const cleanupFunctions = new Set();
+document.addEventListener('DOMContentLoaded', () => {     
+    try {         
+        window.cloudController = new CloudController();         
 
-    const handleError = (error, source) => {
-        console.error(`Error in ${source}:`, error);
-        const resultDiv = document.getElementById('result');
-        if (resultDiv) {
-            resultDiv.textContent = `Error in ${source}: ${error.message}`;
-            resultDiv.className = 'error';
-            resultDiv.classList.remove('hidden');
-        }
-    };
+        // Mount React components if needed         
+        const regionMount = document.getElementById('regionSelectorMount');         
+        if (regionMount) {             
+            const root = ReactDOM.createRoot(regionMount);             
+            root.render(React.createElement(RegionSelector));         
+        }          
 
-    // Check if CONFIG is available
-    if (!window.CONFIG) {
-        handleError(new Error('CONFIG is not defined'), 'Initialization');
-        return;
-    }
-
-    try {
-        AWS.config.update({
-            maxRetries: CONFIG.AWS.REQUEST_CONFIG.maxRetries,
-            retryDelayOptions: {
-                base: CONFIG.AWS.REQUEST_CONFIG.retryDelay
-            },
-            httpOptions: {
-                timeout: CONFIG.AWS.REQUEST_CONFIG.timeout
-            }
-        });
-    } catch (error) {
-        handleError(error, 'AWS Config');
-    }
-
-    // Initialize UI Controller
-    let uiController;
-    try {
-        uiController = new UIController();
-        window.uiController = uiController;
-        cleanupFunctions.add(() => {
-            if (uiController?.cleanup) {
-                uiController.cleanup();
-            }
-        });
-    } catch (error) {
-        handleError(error, 'UI Controller');
-    }
-
-    // Cleanup on unload
-    window.addEventListener('unload', () => {
-        cleanupFunctions.forEach(cleanup => {
-            try {
-                cleanup();
-            } catch (error) {
-                console.error('Cleanup error:', error);
-            }
-        });
-    });
-
-    if (CONFIG.ENV.DEBUG) {
-        console.log('Application initialized with config:', CONFIG);
-    }
+        const projectMount = document.getElementById('projectSelectorMount');         
+        if (projectMount) {             
+            const root = ReactDOM.createRoot(projectMount);             
+            root.render(React.createElement(ProjectSelector));         
+        }      
+    } catch (error) {         
+        console.error('Failed to initialize:', error);         
+        const resultDiv = document.getElementById('result');         
+        if (resultDiv) {             
+            resultDiv.textContent = `Initialization error: ${error.message}`;             
+            resultDiv.className = 'error';             
+            resultDiv.classList.remove('hidden');         
+        }     
+    } 
 });

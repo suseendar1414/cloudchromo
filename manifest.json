@@ -1,13 +1,36 @@
 {
-    "manifest_version": 2,
-    "name": "AWS Newer",
-    "version": "1.0",
-    "description": "AWS Infrastructure Management Tool",
-    "permissions": [
-      "storage"
+  "manifest_version": 3,
+  "name": "Cloud Infrastructure Tool",
+  "version": "1.0",
+  "description": "AWS and GCP Infrastructure Management Tool",
+  "permissions": [
+    "storage",
+    "identity",
+    "identity.email"
+  ],
+  "host_permissions": [
+    "https://cloudresourcemanager.googleapis.com/*",
+    "https://www.googleapis.com/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "oauth2": {
+    "client_id": "564640062168-dn4c6embvjqc5fb1q1l18afkkakufj3i.apps.googleusercontent.com",
+    "scopes": [
+        "https://www.googleapis.com/auth/cloud-platform.read-only",
+        "https://www.googleapis.com/auth/cloudplatformprojects.readonly"
+    ]
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "web_accessible_resources": [{
+    "resources": [
+      "popup.html",
+      "*.js",
+      "*.css"
     ],
-    "content_security_policy": "script-src 'self' https://cdnjs.cloudflare.com; object-src 'self'",
-    "browser_action": {
-      "default_popup": "popup.html"
-    }
-  }
+    "matches": ["<all_urls>"]
+  }]
+}

@@ -1,3 +1,19 @@
+// Add this at the top of popup.js
+window.initGapi = function() {
+    gapi.load('client:auth2', async function() {
+        try {
+            await gapi.client.init({
+                clientId: CONFIG.ERRORS.GCP.AUTH.CLIENT_ID,
+                scope: CONFIG.ERRORS.GCP.AUTH.SCOPES.join(' '),
+                cookiepolicy: 'none'  // This is important for Chrome extensions
+            });
+            console.log('GAPI initialized successfully');
+        } catch (error) {
+            console.error('GAPI initialization failed:', error);
+        }
+    });
+};
+
 class UIController {
     constructor() {
         this.state = {
@@ -286,5 +302,90 @@ class UIController {
     }
 }
 
-// Export the controller for usage
+
+// Add the new CloudController class
+class CloudController {
+    constructor() {
+        this.state = {
+            activeProvider: 'aws',
+            controllers: {
+                aws: new UIController(),
+                gcp: new GcpController()
+            }
+        };
+
+        this.initializeEventListeners();
+    }
+
+    initializeEventListeners() {
+        // Cloud provider tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => this.handleTabSwitch(tab.dataset.target));
+        });
+
+        // Initialize provider-specific visibility
+        this.updateVisibility();
+    }
+
+    handleTabSwitch(target) {
+        this.state.activeProvider = target.includes('aws') ? 'aws' : 'gcp';
+        
+        document.querySelectorAll('.tab').forEach(t => 
+            t.classList.toggle('active', t.dataset.target === target)
+        );
+        
+        document.querySelectorAll('.tab-content').forEach(c => 
+            c.classList.toggle('active', c.id === target)
+        );
+
+        this.updateVisibility();
+    }
+
+    updateVisibility() {
+        const isAws = this.state.activeProvider === 'aws';
+        document.getElementById('result').className = 'hidden';
+        
+        ['aws-content', 'gcp-content'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.toggle('active', 
+                    isAws ? id === 'aws-content' : id === 'gcp-content'
+                );
+            }
+        });
+    }
+
+    showMessage(message, type) {
+        const resultDiv = document.getElementById('result');
+        if (resultDiv) {
+            resultDiv.textContent = message;
+            resultDiv.className = type;
+            resultDiv.classList.remove('hidden');
+        }
+    }
+
+    getActiveController() {
+        return this.controllers[this.state.activeProvider];
+    }
+}
+
+
+
+// Export both controllers
 window.UIController = UIController;
+window.CloudController = CloudController;
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        window.cloudController = new CloudController();
+    } catch (error) {
+        console.error('Failed to initialize cloud controller:', error);
+        const resultDiv = document.getElementById('result');
+        if (resultDiv) {
+            resultDiv.textContent = `Initialization error: ${error.message}`;
+            resultDiv.className = 'error';
+            resultDiv.classList.remove('hidden');
+        }
+    }
+});
